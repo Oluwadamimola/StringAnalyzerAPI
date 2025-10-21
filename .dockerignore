@@ -1,11 +1,8 @@
 bin/
 obj/
+.git/
+.vscode/
 *.user
 *.suo
-*.vs
-.vscode/
-*.DS_Store
-*.db
 *.log
-*.pdb
-*.exe
+

@@ -1,22 +1,23 @@
-# Use .NET SDK image to build the project
+# Use the .NET 8 SDK image for building
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /app
 
-# Copy csproj and restore dependencies first (better caching)
-COPY *.csproj ./
+# Copy everything and restore dependencies
+COPY . .
 RUN dotnet restore
 
-# Copy the rest of the project
-COPY . ./
-RUN dotnet publish -c Release -o out
+# Build and publish the app
+RUN dotnet publish -c Release -o /app/out
 
-# Use runtime image to run the application
+# Use the .NET 8 runtime image for running
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
-COPY --from=build /app/out .
 
-# Railway expects this port
+COPY --from=build /app/out ./
+
+# Expose port 8080 for Railway
 EXPOSE 8080
 
-# Start the application
-ENTRYPOINT ["dotnet", "DynamicProfileAPI.dll"]
+# Start the app
+ENTRYPOINT ["dotnet", "StringAnalyzerAPI.dll"]
+
