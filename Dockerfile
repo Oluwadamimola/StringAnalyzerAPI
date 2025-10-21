@@ -1,21 +1,27 @@
-# Use the official .NET 8 SDK for building
+# Use the official .NET 8 SDK image to build the app
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /app
 
-# Copy csproj and restore dependencies
-COPY *.sln .
-COPY StringAnalyzerAPI/*.csproj ./StringAnalyzerAPI/
-RUN dotnet restore StringAnalyzerAPI/StringAnalyzerAPI.csproj
+# Copy the csproj and restore dependencies
+COPY *.csproj .
+RUN dotnet restore
 
-# Copy the remaining source code and build the app
+# Copy the rest of the source code
 COPY . .
-RUN dotnet publish StringAnalyzerAPI/StringAnalyzerAPI.csproj -c Release -o /out
 
-# Use the runtime image to run the app
-FROM mcr.microsoft.com/dotnet/aspnet:8.0
+# Build and publish the app
+RUN dotnet publish -c Release -o out
+
+# Use the smaller runtime image for the final stage
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
-COPY --from=build /out .
+COPY --from=build /app/out .
+
+# Expose the default port (Railway will set its own PORT env var)
 ENV ASPNETCORE_URLS=http://+:8080
 EXPOSE 8080
+
+# Start the app
 ENTRYPOINT ["dotnet", "StringAnalyzerAPI.dll"]
+
 
